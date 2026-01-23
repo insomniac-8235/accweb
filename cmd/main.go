@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,9 +14,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const configFile = "config.yml"
+const configFileDefault = "config.yml"
 
 func main() {
+	var configFile string
+
+	flag.StringVar(&configFile, "config", configFileDefault, "override configuration file")
+	flag.StringVar(&configFile, "c", configFileDefault, "override configuration file (shorthand)")
+	flag.Parse()
+
 	c := cfg.Load(configFile)
 
 	sM := server_manager.New(c)
