@@ -3,11 +3,17 @@
         <div class="server-settings-container two-columns">
             <div>
                 <checkbox :label="$t('autostart_label')" v-model="autoStart"></checkbox>
+                <checkbox :label="$t('enable_global_entry_label')" v-model="enableGlobalEntrylist"></checkbox>
+                <checkbox :label="$t('enable_global_ban_label')" v-model="enableGlobalBanlist"></checkbox>
 
+                
+            </div>
+            
+            <div>
                 <div v-if="os.name == 'windows'">
                     <checkbox :label="$t('enable_adv_windows_conf')" v-model="enableAdvWindowsCfg"></checkbox>
-
-                    <div v-if="enableAdvWindowsCfg" style="padding: 10px;">
+                </div>
+                <div v-if="os.name == 'windows' && enableAdvWindowsCfg" style="padding: 10px;">
                         <div class="alert">{{$t('adv_windows_alert')}}</div>
 
                         <div class="server-settings-container two-columns">
@@ -21,10 +27,7 @@
                             <checkbox :label="'CPU '+(n-1)" v-for="n in os.numCpu" :key="n" v-model="coreAffinityCPU[n-1]"></checkbox>
                         </div>
                     </div>
-                </div>
             </div>
-            
-            <div></div>
         </div>
     </collapsible>
 </template>
@@ -51,6 +54,8 @@ export default {
         return {
             autoStart: false,
             enableAdvWindowsCfg: false,
+            enableGlobalEntrylist: false,
+            enableGlobalBanlist: false,
             advWindowsCfg: {
                 enableWindowsFirewall: false,
                 cpuPriority: 32,
@@ -96,6 +101,8 @@ export default {
         setData(data) {
             this.autoStart = data.autoStart;
             this.enableAdvWindowsCfg = data.enableAdvWindowsCfg;
+            this.enableGlobalEntrylist = data.enableGlobalEntrylist;
+            this.enableGlobalBanlist = data.enableGlobalBanlist;
 
             if (data.advWindowsCfg !== null) {
                 this.advWindowsCfg = data.advWindowsCfg;
@@ -119,7 +126,9 @@ export default {
             return {
                 autoStart: this.autoStart,
                 enableAdvWindowsCfg: this.enableAdvWindowsCfg,
-                advWindowsCfg: this.advWindowsCfg
+                advWindowsCfg: this.advWindowsCfg,
+                enableGlobalEntrylist: this.enableGlobalEntrylist,
+                enableGlobalBanlist: this.enableGlobalEntrylist
             };
         }
     }
@@ -134,6 +143,8 @@ export default {
         "enable_adv_windows_conf": "Advanced Windows Configurations",
         "cpu_priority_label": "Process priority",
         "enable_windows_firewall": "Enable Windows Firewall",
+        "enable_global_entry_label": "Enable global entry list",
+        "enable_global_ban_label": "Enable global ban list",
         "adv_windows_alert": "CAUTION: If you are not familiarized with this terms, DISABLE this feature!"
     }
 }

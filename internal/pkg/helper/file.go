@@ -63,12 +63,12 @@ func DecodeBytes(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func LoadFromPath(baseDir, filename string, obj interface{}) error {
+func LoadFromPath(baseDir, filename string, obj any) error {
 	path := filepath.Join(baseDir, filename)
 	f, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return WrapErrors(ErrFileNotFound, err)
+			return errors.Join(err, ErrFileNotFound)
 		}
 
 		return err
@@ -80,14 +80,45 @@ func LoadFromPath(baseDir, filename string, obj interface{}) error {
 	return Decode(f, obj)
 }
 
-func SaveToPath(baseDir, filename string, obj interface{}) error {
+func LoadFromPathSimple(baseDir, filename string, obj any) error {
+	path := filepath.Join(baseDir, filename)
+	f, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return errors.Join(err, ErrFileNotFound)
+		}
+
+		return err
+	}
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
+
+	return json.NewDecoder(f).Decode(obj)
+}
+
+func SaveToPath(baseDir, filename string, obj any) error {
 	encodedData, err := Encode(obj)
 	if err != nil {
 		return err
 	}
 
 	path := filepath.Join(baseDir, filename)
-	if err := ioutil.WriteFile(path, encodedData, 0655); err != nil {
+	if err := os.WriteFile(path, encodedData, 0655); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SaveToPathSimple(baseDir, filename string, obj any) error {
+	encodedData, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+
+	path := filepath.Join(baseDir, filename)
+	if err := os.WriteFile(path, encodedData, 0655); err != nil {
 		return err
 	}
 

@@ -2,7 +2,7 @@ package server_manager
 
 import (
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -16,10 +16,15 @@ import (
 	"github.com/assetto-corsa-web/accweb/internal/pkg/instance"
 )
 
+type GlobalListCtx string
+
 var (
 	ErrCantCreateConfigDir = errors.New("cant create accweb config dir")
 	ErrServerNotFound      = errors.New("server not found")
 	ErrServerAlreadyExists = errors.New("server already exists")
+
+	GlobalListCtxEntry GlobalListCtx = "entrylist"
+	GlobalEntryCtxBan  GlobalListCtx = "banlist"
 )
 
 type Service struct {
@@ -39,7 +44,7 @@ func (s *Service) LoadAll() error {
 		return helper.WrapErrors(ErrCantCreateConfigDir, err)
 	}
 
-	dir, err := ioutil.ReadDir(s.config.ConfigPath)
+	dir, err := os.ReadDir(s.config.ConfigPath)
 	if err != nil {
 		return err
 	}
@@ -284,4 +289,20 @@ func (s *Service) Start(id string) error {
 
 func (s *Service) Config() cfg.Config {
 	return *s.config
+}
+
+func (s *Service) SaveGlobalEntry(context GlobalListCtx, entries any) error {
+	name := fmt.Sprintf("global-%s.json", context)
+	return helper.SaveToPathSimple(s.config.ConfigPath, name, entries)
+}
+
+func (s *Service) LoadGlobalEntry(context GlobalListCtx, entries any) error {
+	name := fmt.Sprintf("global-%s.json", context)
+
+	err := helper.LoadFromPathSimple(s.config.ConfigPath, name, entries)
+	if errors.Is(err, helper.ErrFileNotFound) {
+		return nil
+	}
+
+	return err
 }
